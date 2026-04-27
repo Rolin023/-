@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>学生信息管理系统</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="loginPage">
+    <div class="header">
+      <h1>学生信息管理系统</h1>
+    </div>
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+          <div class="login-container">
+            <h2 class="text-center mb-4">系统登录</h2>
+            <form id="loginForm">
+              <div class="mb-3">
+                <label for="loginStudentId" class="form-label">学号/账号</label>
+                <input type="text" class="form-control" id="loginStudentId" placeholder="请输入学号" required />
+              </div>
+              <div class="mb-3">
+                <label for="password" class="form-label">密码</label>
+                <input type="password" class="form-control" id="password" placeholder="请输入密码" required />
+              </div>
+              <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary btn-lg" id="loginBtn">登录</button>
+                <button type="button" class="btn btn-outline-primary" id="showRegisterModal">注册新账号</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="system-info">
+        <p>© 学生信息管理系统</p>
+    </div>
+  </div>
+  <div id="mainPage" style="display: none;">
+    <div class="header" id="mainHeader">
+      <h1>学生信息管理系统</h1>
+      <div class="role-badge" id="roleBadge">普通用户</div>
+      <div class="header-right-items">
+        <div id="welcomeMessage">欢迎您，<span id="currentUserName"></span></div>
+        <button class="btn btn-light logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> 退出登录</button>
+      </div>
+    </div>
+
+    <div class="container">
+      <ul class="nav nav-tabs" id="mainTabs">
+        <li class="nav-item hidden-tab" id="overviewTabItem"><a class="nav-link" id="overviewTab" data-bs-toggle="tab" href="#overview">总览</a></li>
+        <li class="nav-item hidden-tab" id="infoTabItem"><a class="nav-link" id="infoTab" data-bs-toggle="tab" href="#infoForm">报到录入</a></li>
+        <li class="nav-item hidden-tab" id="queryTabItem"><a class="nav-link" id="queryTab" data-bs-toggle="tab" href="#queryForm">信息查询</a></li>
+        <li class="nav-item hidden-tab" id="personalInfoTabItem"><a class="nav-link" id="personalInfoTab" data-bs-toggle="tab" href="#personalInfo">个人信息</a></li>
+        <li class="nav-item hidden-tab" id="collegeDataTabItem"><a class="nav-link" id="collegeDataTab" data-bs-toggle="tab" href="#collegeData">学院数据</a></li>
+        <li class="nav-item hidden-tab" id="reviewTabItem"><a class="nav-link" id="reviewTab" data-bs-toggle="tab" href="#reviewData">审核管理</a></li>
+        <li class="nav-item hidden-tab" id="manageTabItem"><a class="nav-link" id="manageTab" data-bs-toggle="tab" href="#manageData">数据管理</a></li>
+        <li class="nav-item hidden-tab" id="dataManagementTabItem"><a class="nav-link" id="dataManagementTab" data-bs-toggle="tab" href="#dataManagement">高级管理</a></li>
+        <li class="nav-item hidden-tab" id="searchTabItem"><a class="nav-link" id="searchTab" data-bs-toggle="tab" href="#search">高级查询</a></li>
+        <li class="nav-item hidden-tab" id="createAdminTabItem"><a class="nav-link" id="createAdminTab" data-bs-toggle="tab" href="#createAdminPane">创建管理员账号</a></li>
+      </ul>
+
+      <div class="tab-content">
+        <div class="tab-pane fade" id="overview">
+          <div class="management-container">
+            <h2 class="text-center mb-4">学工处 - 数据总览</h2>
+            <div class="row mb-4">
+              <div class="col-md-3"><div class="stats-card"><div class="stats-number admin-stats-number" id="adminTotalCount">0</div><div class="stats-label">学生总数</div></div></div>
+              <div class="col-md-3"><div class="stats-card"><div class="stats-number admin-stats-number" id="adminPendingCount">0</div><div class="stats-label">待审核</div></div></div>
+              <div class="col-md-3"><div class="stats-card"><div class="stats-number admin-stats-number" id="adminApprovedCount">0</div><div class="stats-label">已通过</div></div></div>
+              <div class="col-md-3"><div class="stats-card"><div class="stats-number admin-stats-number" id="adminCollegeCount">0</div><div class="stats-label">涉及学院</div></div></div>
+            </div>
+            <div class="card">
+              <div class="card-header admin-card-header">各学院数据统计</div>
+              <div class="card-body">
+                <table class="table table-striped table-hover">
+                  <thead><tr><th>学院</th><th>总人数</th><th>待审核</th><th>已通过</th><th>未通过</th><th>操作</th></tr></thead>
+                  <tbody id="collegeStatsBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="infoForm">
+          <div class="row">
+            <div class="col-md-8 offset-md-2">
+              <div class="form-container">
+                <h2 class="text-center mb-4">学生报到信息录入</h2>
+                <div id="duplicateWarning" class="duplicate-warning" style="display: none;">
+                  <i class="fas fa-exclamation-triangle"></i><strong>提示：</strong><span id="warningText"></span>
+                </div>
+                <form id="studentInfoForm">
+                  <div class="card">
+                    <div class="card-header">基本信息</div>
+                    <div class="card-body">
+                      <div class="row">
+                        <div class="col-md-6 mb-3"><label class="form-label required">姓名</label><div id="nameReadonly" class="readonly-field"></div></div>
+                        <div class="col-md-6 mb-3"><label class="form-label required">学号</label><div id="studentIdReadonly" class="readonly-field"></div></div>
+                      </div>
+                      <div class="row">
+                        <div class="col-md-6 mb-3"><label class="form-label required">学院</label><div id="collegeReadonly" class="readonly-field"></div></div>
+                        <div class="col-md-6 mb-3"><label class="form-label required">专业</label><div id="majorReadonly" class="readonly-field"></div></div>
+                      </div>
+                      <div class="row">
+                        <div class="col-md-6 mb-3"><label class="form-label required">年级</label><div id="gradeReadonly" class="readonly-field"></div></div>
+                        <div class="col-md-6 mb-3"><label class="form-label required">身份证号</label><div id="idCardReadonly" class="readonly-field"></div></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card">
+                    <div class="card-header">迎新注册信息 <small class="text-muted">（可分步提交）</small></div>
+                    <div class="card-body">
+                      <div class="row">
+                        <div class="col-md-6 mb-3"><label for="reportDate" class="form-label">入学报到时间</label><input type="date" class="form-control date-field" id="reportDate" /></div>
+                        <div class="col-md-6 mb-3"><label for="medicalDate" class="form-label">体检完成时间</label><input type="date" class="form-control date-field" id="medicalDate" /></div>
+                      </div>
+                      <div class="row">
+                        <div class="col-md-6 mb-3"><label for="militaryDate" class="form-label">军训结业时间</label><input type="date" class="form-control date-field" id="militaryDate" /></div>
+                        <div class="col-md-6 mb-3"><label for="paymentDate" class="form-label">学费缴纳时间</label><input type="date" class="form-control date-field" id="paymentDate" /></div>
+                      </div>
+                      <div class="row">
+                        <div class="col-md-6 mb-3"><label for="booksDate" class="form-label">教材领取时间</label><input type="date" class="form-control date-field" id="booksDate" /></div>
+                        <div class="col-md-6 mb-3"><label for="dormDate" class="form-label">宿舍入住时间</label><input type="date" class="form-control date-field" id="dormDate" /></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="d-grid mt-4"><button type="submit" class="btn btn-primary btn-lg" id="submitBtn">提交信息</button></div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="queryForm">
+          <div class="row">
+            <div class="col-md-8 offset-md-2">
+              <div class="query-container">
+                <h2 class="text-center mb-4">信息查询</h2>
+                <form id="queryFormInner">
+                  <div class="card">
+                    <div class="card-body">
+                      <div class="row">
+                        <div class="col-md-6 mb-3"><label for="queryName" class="form-label">姓名</label><input type="text" class="form-control" id="queryName" placeholder="输入姓名查询" /></div>
+                        <div class="col-md-6 mb-3"><label for="queryIdCard" class="form-label">身份证号</label><input type="text" class="form-control" id="queryIdCard" placeholder="输入身份证号查询" /></div>
+                      </div>
+                      <button type="button" class="btn btn-primary w-100" id="queryBtn">查询信息</button>
+                    </div>
+                  </div>
+                </form>
+                <div class="card result-card" id="queryResult">
+                  <div class="card-header">查询结果</div>
+                  <div class="card-body">
+                    <div class="row result-row"><div class="col-md-3 result-label">姓名：</div><div class="col-md-9" id="resultName"></div></div>
+                    <div class="row result-row"><div class="col-md-3 result-label">身份证号：</div><div class="col-md-9" id="resultIdCard"></div></div>
+                    <div class="row result-row"><div class="col-md-3 result-label">学院：</div><div class="col-md-9" id="resultCollege"></div></div>
+                    <div class="row result-row"><div class="col-md-3 result-label">年级：</div><div class="col-md-9" id="resultGrade"></div></div>
+                    <div class="row result-row"><div class="col-md-3 result-label">专业：</div><div class="col-md-9" id="resultMajor"></div></div>
+                    <div class="row result-row"><div class="col-md-3 result-label">学号：</div><div class="col-md-9" id="resultStudentId"></div></div>
+                    <div class="row result-row"><div class="col-md-3 result-label">入学报到时间：</div><div class="col-md-9" id="resultReportDate"></div></div>
+                    <div class="row result-row"><div class="col-md-3 result-label">体检完成时间：</div><div class="col-md-9" id="resultMedicalDate"></div></div>
+                    <div class="row result-row"><div class="col-md-3 result-label">军训结业时间：</div><div class="col-md-9" id="resultMilitaryDate"></div></div>
+                    <div class="row result-row"><div class="col-md-3 result-label">学费缴纳时间：</div><div class="col-md-9" id="resultPaymentDate"></div></div>
+                    <div class="row result-row"><div class="col-md-3 result-label">教材领取时间：</div><div class="col-md-9" id="resultBooksDate"></div></div>
+                    <div class="row result-row"><div class="col-md-3 result-label">宿舍入住时间：</div><div class="col-md-9" id="resultDormDate"></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="personalInfo">
+          <div class="row"><div class="col-md-8 offset-md-2"><div class="query-container">
+            <h2 class="text-center mb-4">个人基础信息</h2>
+            
+            <div class="card mb-4">
+              <div class="card-body">
+                <form id="personalInfoUpdateForm">
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label required">姓名</label>
+                      <input type="text" class="form-control" id="updPersonalName" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">学号 </label>
+                      <input type="text" class="form-control readonly-field" id="updPersonalStudentId" disabled>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label required">身份证号</label>
+                      <input type="text" class="form-control" id="updPersonalIdCard" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label required">学院</label>
+                      <input type="text" class="form-control" id="updPersonalCollege" list="collegeList" required>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label required">专业</label>
+                      <input type="text" class="form-control" id="updPersonalMajor" list="majorList" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label required">年级</label>
+                      <input type="text" class="form-control" id="updPersonalGrade" required>
+                    </div>
+                  </div>
+                  <div class="d-grid">
+                    <button type="submit" class="btn btn-primary" id="updatePersonalInfoBtn">保存修改</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">迎新报到状态</div>
+              <div class="card-body">
+                <div class="row result-row"><div class="col-md-4 result-label">入学报到时间：</div><div class="col-md-8" id="personalReportDate"></div></div>
+                <div class="row result-row"><div class="col-md-4 result-label">体检完成时间：</div><div class="col-md-8" id="personalMedicalDate"></div></div>
+                <div class="row result-row"><div class="col-md-4 result-label">军训结业时间：</div><div class="col-md-8" id="personalMilitaryDate"></div></div>
+                <div class="row result-row"><div class="col-md-4 result-label">学费缴纳时间：</div><div class="col-md-8" id="personalPaymentDate"></div></div>
+                <div class="row result-row"><div class="col-md-4 result-label">教材领取时间：</div><div class="col-md-8" id="personalBooksDate"></div></div>
+                <div class="row result-row"><div class="col-md-4 result-label">宿舍入住时间：</div><div class="col-md-8" id="personalDormDate"></div></div>
+                <div class="row result-row"><div class="col-md-4 result-label">当前审核状态：</div><div class="col-md-8" id="personalStatus"></div></div>
+              </div>
+            </div>
+            
+          </div></div></div>
+        </div>
+        <div class="tab-pane fade" id="collegeData">
+          <div class="query-container">
+            <h2 class="text-center mb-4">学院学生数据</h2>
+            <div class="card">
+              <div class="card-body">
+                <table class="table">
+                  <thead><tr><th>#</th><th>姓名</th><th>身份证号</th><th>学号</th><th>年级</th><th>专业</th><th>报到时间</th><th>状态</th><th>操作</th></tr></thead>
+                  <tbody id="collegeTableBody"></tbody>
+                </table>
+                <button class="btn btn-outline-primary w-100" id="exportCollegeData">导出数据</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="reviewData">
+          <div class="query-container">
+            <h2 class="text-center mb-4">待审核信息</h2>
+            <div class="card review-table">
+              <div class="card-body">
+                <table class="table">
+                  <thead><tr><th>#</th><th>姓名</th><th>身份证号</th><th>学号</th><th>提交部分</th><th>时间</th><th>操作</th></tr></thead>
+                  <tbody id="reviewTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="manageData">
+          <div class="management-container">
+            <h2 class="text-center mb-4">学生数据管理</h2>
+            <div class="row mb-4">
+              <div class="col-md-3"><div class="stats-card"><div id="totalCount" class="stats-number">0</div><div class="stats-label">学生总数</div></div></div>
+              <div class="col-md-3"><div class="stats-card"><div id="todayCount" class="stats-number">0</div><div class="stats-label">今日新增</div></div></div>
+              <div class="col-md-3"><div class="stats-card"><div id="collegeCount" class="stats-number">0</div><div class="stats-label">涉及学院</div></div></div>
+              <div class="col-md-3"><div class="stats-card"><div id="monthCount" class="stats-number">0</div><div class="stats-label">本月新增</div></div></div>
+            </div>
+            <div class="card">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-6"><input type="text" id="searchInput" class="form-control" placeholder="按姓名/身份证号/学号搜索" /></div>
+                  <div class="col-md-6 d-flex gap-2">
+                    <button id="searchBtn" class="btn btn-primary">搜索</button>
+                    <button id="exportBtn" class="btn btn-outline-primary">导出</button>
+                    <button id="refreshBtn" class="btn btn-outline-primary">刷新</button>
+                  </div>
+                </div>
+                <table class="table mt-3">
+                  <thead><tr><th>#</th><th>姓名</th><th>身份证号</th><th>学院</th><th>学号</th><th>年级</th><th>专业</th><th>时间</th><th>状态</th><th>操作</th></tr></thead>
+                  <tbody id="dataTableBody"></tbody>
+                </table>
+                <ul class="pagination mt-2" id="pagination"></ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="dataManagement">
+          <div class="management-container">
+            <h2 class="text-center mb-4">学工处 - 高级管理</h2>
+            <div class="card">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-8"><input type="text" id="adminSearchInput" class="form-control" placeholder="按姓名、身份证号、学号、学院、专业搜索" /></div>
+                  <div class="col-md-4 d-flex gap-2">
+                    <button id="adminSearchBtn" class="btn btn-admin">搜索</button>
+                    <button id="adminExportBtn" class="btn btn-admin">导出全部</button>
+                  </div>
+                </div>
+                <table class="table mt-3">
+                  <thead><tr><th>#</th><th>姓名</th><th>身份证号</th><th>学院</th><th>学号</th><th>年级</th><th>专业</th><th>状态</th><th>操作</th></tr></thead>
+                  <tbody id="adminDataTableBody"></tbody>
+                </table>
+                <ul class="pagination mt-2" id="adminPagination"></ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="search">
+          <div class="query-container">
+            <h2 class="text-center mb-4">学工处 - 高级查询</h2>
+            <div class="card">
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-4"><input type="text" id="adminQueryName" class="form-control" placeholder="姓名"></div>
+                  <div class="col-md-4"><input type="text" id="adminQueryIdCard" class="form-control" placeholder="身份证号"></div>
+                  <div class="col-md-4"><input type="text" id="adminQueryStudentId" class="form-control" placeholder="学号"></div>
+                </div>
+                <div class="row mt-3">
+                  <div class="col-md-4"><input type="text" id="adminQueryCollege" class="form-control" list="collegeList" placeholder="输入或选择学院" autocomplete="off"></div>
+                  <div class="col-md-4">
+                    <select id="adminQueryStatus" class="form-select">
+                      <option value="">全部状态</option>
+                      <option value="pending">待审核</option>
+                      <option value="approved">已通过</option>
+                      <option value="rejected">未通过</option>
+                      <option value="partially_approved">部分通过</option>
+                    </select>
+                  </div>
+                  <div class="col-md-4"><input type="date" id="adminQueryDate" class="form-control"></div>
+                </div>
+                <button id="adminQueryBtn" class="btn btn-admin w-100 mt-3">查询</button>
+              </div>
+            </div>
+            <div class="card result-card mt-3" id="adminQueryResult">
+              <div class="card-body">
+                <table class="table">
+                  <thead><tr><th>#</th><th>姓名</th><th>身份证号</th><th>学院</th><th>学号</th><th>年级</th><th>专业</th><th>状态</th><th>操作</th></tr></thead>
+                  <tbody id="adminQueryTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="createAdminPane">
+          <div class="management-container">
+            <h2 class="text-center mb-4">学工处 - 创建管理员账号</h2>
+            <div class="card">
+              <div class="card-body">
+                <form id="adminCreateAccountForm">
+                  <div class="d-flex gap-3 mb-3">
+                    <div class="form-check">
+                      <input type="radio" name="adminCreateAccountType" value="college" id="typeCollege" checked>
+                      <label for="typeCollege" class="fw-bold text-primary">创建学院管理员</label>
+                    </div>
+                    <div class="form-check">
+                      <input type="radio" name="adminCreateAccountType" value="admin" id="typeAdmin">
+                      <label for="typeAdmin" class="fw-bold text-danger">创建学工部管理员</label>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-6 mb-3"><input type="text" id="adminCreateUsername" class="form-control" placeholder="管理员登录用户名"></div>
+                    <div class="col-md-6 mb-3"><input type="text" id="adminCreateRealName" class="form-control" placeholder="管理员真实姓名"></div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-6 mb-3"><input type="password" id="adminCreatePassword" class="form-control" placeholder="设置初始密码"></div>
+                    <div class="col-md-6 mb-3"><input type="password" id="adminCreateConfirmPassword" class="form-control" placeholder="确认初始密码"></div>
+                  </div>
+                  <div id="adminCreateCollegeSection" class="mb-3"><input type="text" id="adminCreateCollege" class="form-control" list="collegeList" placeholder="请输入或选择其管理的学院" autocomplete="off"></div>
+                  <button type="button" id="adminCreateBtn" class="btn btn-admin w-100">立即创建该管理员</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <datalist id="collegeList">
+    <option value="计算机学院"></option><option value="电子信息学院"></option><option value="机械工程学院"></option>
+    <option value="土木工程学院"></option><option value="经济管理学院"></option><option value="外国语学院"></option>
+    <option value="法学院"></option><option value="医学院"></option><option value="生物工程学院"></option>
+    <option value="材料科学学院"></option>
+  </datalist>
+  <datalist id="majorList">
+    <option value="计算机科学与技术"></option><option value="软件工程"></option><option value="人工智能"></option>
+    <option value="网络工程"></option><option value="电子信息工程"></option><option value="通信工程"></option>
+    <option value="机械设计制造及其自动化"></option><option value="工商管理"></option><option value="国际经济与贸易"></option>
+    <option value="临床医学"></option>
+  </datalist>
+  <div class="modal fade" id="registerModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">用户注册</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+          <form id="registerForm">
+            <div class="d-flex gap-3 mb-3" style="display:none !important;">
+              <div class="form-check"><input type="radio" name="accountType" value="student" id="stuAcc" checked><label for="stuAcc">学生账号</label></div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3"><input type="text" id="modalRegisterUsername" class="form-control" placeholder="登录用户名"><div id="modalRegisterUsernameError" class="error-message"></div></div>
+              <div class="col-md-6 mb-3"><input type="text" id="modalRegisterRealName" class="form-control" placeholder="真实姓名"><div id="modalRegisterRealNameError" class="error-message"></div></div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <input type="password" id="modalRegisterPassword" class="form-control" placeholder="密码">
+                <div id="modalRegisterPasswordStrength" class="password-strength mt-2"></div>
+                <div class="password-requirements">
+                  <ul class="list-unstyled mb-0">
+                    <li id="modalRegisterLengthReq" class="invalid">至少 8 个字符</li>
+                    <li id="modalRegisterUppercaseReq" class="invalid">包含大写字母</li>
+                    <li id="modalRegisterLowercaseReq" class="invalid">包含小写字母</li>
+                    <li id="modalRegisterNumberReq" class="invalid">包含数字</li>
+                    <li id="modalRegisterSpecialReq" class="invalid">包含特殊字符</li>
+                  </ul>
+                </div>
+                <div id="modalRegisterPasswordError" class="error-message"></div>
+              </div>
+              <div class="col-md-6 mb-3"><input type="password" id="modalRegisterConfirmPassword" class="form-control" placeholder="确认密码"><div id="modalRegisterConfirmPasswordError" class="error-message"></div></div>
+            </div>
+            <div id="collegeSection" class="row">
+              <div class="col-md-6 mb-3"><input type="text" id="modalRegisterCollege" class="form-control" list="collegeList" placeholder="请输入或选择学院" autocomplete="off"><div id="modalRegisterCollegeError" class="error-message"></div></div>
+              <div class="col-md-6 mb-3"><input type="tel" id="modalRegisterPhone" class="form-control" placeholder="电话"></div>
+            </div>
+            <div id="studentFields">
+              <div class="row">
+                <div class="col-md-6 mb-3"><input type="text" id="modalRegisterGrade" class="form-control" placeholder="年级"><div id="modalRegisterGradeError" class="error-message"></div></div>
+                <div class="col-md-6 mb-3"><input type="text" id="modalRegisterMajor" class="form-control" list="majorList" placeholder="请输入或选择专业" autocomplete="off"><div id="modalRegisterMajorError" class="error-message"></div></div>
+              </div>
+              <div class="row">
+                <div class="col-md-6 mb-3"><input type="text" id="modalRegisterStudentId" class="form-control" placeholder="学号"><div id="modalRegisterStudentIdError" class="error-message"></div></div>
+                <div class="col-md-6 mb-3"><input type="text" id="modalRegisterIdCard" class="form-control" placeholder="身份证号"><div id="modalRegisterIdCardError" class="error-message"></div></div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button><button type="button" class="btn btn-primary" id="modalRegisterBtn">注册</button></div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="reviewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">审核信息</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body" id="reviewModalBody"></div>
+        <div class="modal-footer">
+          <button type="button" id="approveBtn" class="btn btn-success">通过审核</button>
+          <button type="button" id="rejectBtn" class="btn btn-danger">拒绝审核</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="detailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">学生详细信息</h5></div>
+        <div class="modal-body">
+          <div class="row"><div class="col-4">姓名：</div><div class="col-8" id="detailName"></div></div>
+          <div class="row"><div class="col-4">身份证号：</div><div class="col-8" id="detailIdCard"></div></div>
+          <div class="row"><div class="col-4">学院：</div><div class="col-8" id="detailCollege"></div></div>
+          <div class="row"><div class="col-4">年级：</div><div class="col-8" id="detailGrade"></div></div>
+          <div class="row"><div class="col-4">专业：</div><div class="col-8" id="detailMajor"></div></div>
+          <div class="row"><div class="col-4">学号：</div><div class="col-8" id="detailStudentId"></div></div>
+          <div class="row"><div class="col-4">入学报到时间：</div><div class="col-8" id="detailReportDate"></div></div>
+          <div class="row"><div class="col-4">体检完成时间：</div><div class="col-8" id="detailMedicalDate"></div></div>
+          <div class="row"><div class="col-4">军训结业时间：</div><div class="col-8" id="detailMilitaryDate"></div></div>
+          <div class="row"><div class="col-4">学费缴纳时间：</div><div class="col-8" id="detailPaymentDate"></div></div>
+          <div class="row"><div class="col-4">教材领取时间：</div><div class="col-8" id="detailBooksDate"></div></div>
+          <div class="row"><div class="col-4">宿舍入住时间：</div><div class="col-8" id="detailDormDate"></div></div>
+          <div class="row"><div class="col-4">状态：</div><div class="col-8" id="detailStatus"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">编辑信息</h5></div>
+        <div class="modal-body">
+          <form id="editForm">
+            <input type="hidden" id="editMemberId" />
+            <div class="row">
+              <div class="col-6 mb-3"><input type="text" id="editName" class="form-control" placeholder="姓名" /></div>
+              <div class="col-6 mb-3"><input type="text" id="editIdCard" class="form-control" placeholder="身份证号" /></div>
+            </div>
+            <div class="row">
+              <div class="col-6 mb-3"><input type="text" id="editStudentId" class="form-control" placeholder="学号" /></div>
+              <div class="col-6 mb-3"><input type="text" id="editCollege" class="form-control" list="collegeList" placeholder="学院" autocomplete="off"></div>
+            </div>
+            <div class="row">
+              <div class="col-6 mb-3"><input type="text" id="editMajor" class="form-control" list="majorList" placeholder="专业" autocomplete="off"></div>
+              <div class="col-6 mb-3"><input type="text" id="editGrade" class="form-control" placeholder="年级" /></div>
+            </div>
+            <div class="row">
+              <div class="col-6 mb-3"><input type="date" id="editReportDate" class="form-control" /></div>
+              <div class="col-6 mb-3"><input type="date" id="editMedicalDate" class="form-control" /></div>
+            </div>
+            <div class="row">
+              <div class="col-6 mb-3"><input type="date" id="editMilitaryDate" class="form-control" /></div>
+              <div class="col-6 mb-3"><input type="date" id="editPaymentDate" class="form-control" /></div>
+            </div>
+            <div class="row">
+              <div class="col-6 mb-3"><input type="date" id="editBooksDate" class="form-control" /></div>
+              <div class="col-6 mb-3"><input type="date" id="editDormDate" class="form-control" /></div>
+            </div>
+            <div class="row">
+              <div class="col-12">
+                <select id="editStatus" class="form-select">
+                  <option value="pending">待审核</option>
+                  <option value="approved">已通过</option>
+                  <option value="rejected">未通过</option>
+                  <option value="partially_approved">部分通过</option>
+                </select>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer"><button type="button" id="saveEditBtn" class="btn btn-primary">保存修改</button></div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="changePasswordModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-body">
+          <form id="modalPasswordForm">
+            <input type="text" id="modalUsername" class="form-control mb-3" placeholder="用户名" />
+            <input type="password" id="modalCurrentPassword" class="form-control mb-3" placeholder="旧密码" />
+            <input type="password" id="modalNewPassword" class="form-control mb-2" placeholder="新密码" />
+            
+            <div id="modalPasswordStrength" class="password-strength mb-2"></div>
+            <div class="password-requirements mb-3">
+              <ul class="list-unstyled mb-0">
+                <li id="modalLengthReq" class="invalid">至少 8 个字符</li>
+                <li id="modalUppercaseReq" class="invalid">包含大写字母</li>
+                <li id="modalLowercaseReq" class="invalid">包含小写字母</li>
+                <li id="modalNumberReq" class="invalid">包含数字</li>
+                <li id="modalSpecialReq" class="invalid">包含特殊字符</li>
+              </ul>
+            </div>
+
+            <input type="password" id="modalConfirmPassword" class="form-control mb-3" placeholder="确认新密码" />
+            <div id="modalPasswordError" class="error-message" style="display:none;"></div>
+          </form>
+        </div>
+        <div class="modal-footer"><button id="modalChangePasswordBtn" class="btn btn-primary">修改</button></div>
+      </div>
+    </div>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>
